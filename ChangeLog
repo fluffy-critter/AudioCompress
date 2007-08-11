@@ -1,0 +1,152 @@
+2004-10-19
+
+Release 1.5.2
+
+	Brian L. actually tried using the -t parameter.  What a maroon.
+
+2004-03-29
+
+Release 1.5.1
+
+	Saravana Krishna determined that XMMS wasn't calling myInit.  Fixed.
+
+2004-02-05
+
+	Added byte-swapping to commandline client (-x)
+
+2003-07-04
+
+Release 1.5
+	
+	Trying to work out why the esd stuff hangs on my system...
+	
+	Made the commandline filter respect config.h's ANTICLIP value
+
+	Courtney Bane found a really stupid bug in compress.c, and it
+	surprises me that I had never run into it before.
+	
+2003-07-03
+
+	Andrzej Szombierski (qq at kuku.eu.org) added in EsounD plugin
+	functionality.  Thanks!
+
+2003-05-31
+
+Release 1.4
+
+	Added X-less option
+
+2003-04-04
+
+Release 1.3
+
+	When you want something done right, you have to do it yourself...
+	There's now commandline configuration for AudioCompress.
+
+2003-04-03
+
+	CompressCfg() now actually detects whether it's possible to show
+	the monitor when it's asked to.
+
+	Also, Levi Ramsey has promised to send me a patch to configure the
+	commandline AudioCompress tool at runtime.  I could have coded it
+	myself, but I'm too lazy to write code that I'm not actually going
+	to use. :D
+	
+2003-03-07
+
+Release 1.2.1 again
+
+	Oops.  There was a silly C99-ism in compress.c.  I'm surprised
+	nobody ran into it sooner...
+
+2003-03-06
+
+Release 1.2.1
+
+	Oops.  Wasn't actually checking to see if things were allocated first
+	before freeing them in CompressFree().  Thanks to Miguel Provencio for
+	noticing this.
+
+2003-02-23
+
+Release 1.2
+
+	Changed name to AudioCompress
+	
+	Separated the compressor code from the XMMS-specific
+	functionality, to make it easier to make compressor plugins for
+	lots of different things
+
+	Made simple commandline "plugin" for piping
+	
+2002-08-22
+
+	Changed gain indicator in monitor window to be 1..gainmax, rather
+	than 0..4
+
+2002-07-31
+
+Release 1.1
+
+	I rewrote the configfile handling, which was causing some very
+	nasty bugs (such as XMMS no longer saving its own preferences).
+
+	I also rewrote large parts of the README, and removed GAINSHIFT
+	from the configuration dialog, since there's really no reason for
+	it to be there.
+	
+2002-07-15
+
+	Javier split off the preferences into a separate file and fixed a
+	few other minor bugs (like it not saving the monitor window pref)
+
+2002-07-09
+
+Release 1.0
+	
+	There is now runtime configuration, thanks to Javier Conde Rueda.
+	MANY thanks!  (This is what was keeping me from making it a 1.0
+	version.)
+
+2002-06-24  fluffy <fluffy@beesbuzz.biz>
+
+Release 0.4
+	
+	Enforces minimum amplification of 1.0 (to make lower TARGET values
+	sensical)
+
+	Added OSX build
+
+	Changed default settings (again), this time for better
+	preservation of dynamic range
+	
+2002-04-21  fluffy <fluffy@beesbuzz.biz>
+
+Release 0.3
+	
+	More documentation improvements
+
+	Monitor has a better clip indicator and also shows where the
+	current "global peak" will be amplified to
+
+	Better (IMO) default configuration
+	
+2002-04-18  fluffy <fluffy@beesbuzz.biz>
+
+Release 0.2
+	
+	Documentation improvements (actually explaining what the different
+	configuration variables do, for example)
+
+	Build improvements (uses xmms-config to provide proper -I for xmms
+	headers, as well as an install target for system-wide plugin
+	installation)
+
+	More ramping tweaks, as well as target audio level
+
+	Monitor now shows amplification level and when clipping happens
+	
+Release 0.1
+	
+	Initial version

@@ -1,0 +1,292 @@
+AudioCompress v1.5 (2003/07/05)
+(c)2002-3 busybee (http://beesbuzz.biz/)
+
+Introduction
+============
+
+AudioCompress is a simple one-band dynamic range compressor for
+keeping the volume level of an audio stream more or less consistent.
+
+I wrote it because I was disappointed with xmms-volnorm, in terms of
+its overall quality.  In my opinion, it went about the problem the
+wrong way, and tried making a "global maximum" for the entire song,
+which meant that if a song started quiet and then got loud for a
+little bit and then quiet again, it'd start out being over-amplified,
+would distort badly while the amplification ramped down, and then
+would be too quiet after the loud bit.  In the meantime, it also
+didn't even do any interpolation of the gain, so there was very
+obvious audible "clicking" between levels.
+
+Also, xmms-volnorm doesn't seem to be the most efficient code around;
+for example, it converts the audio data to floatingpoint and back!
+(All of AudioCompress' math is done in fixed-point, which takes
+immensely less CPU time, especially on older CPUs, and it's arguably
+more accurate for stuff like this.)
+
+How it works
+============
+
+AudioCompress works very simply.  It keeps a history of the last few
+seconds and sets the amplification so that the loudest peak within
+that time will be the reference for normalizing the sound (i.e. that
+peak will be amplified to full power).  The amplification is smoothly
+interpolated and goes up relatively slowly, and if there's a very
+sudden loud burst, the amplification is dropped quickly (which
+typically isn't noticeable).  If you want to see what it's doing
+internally, there's a pretty monitor.
+
+Commandline vs. Plugin
+======================
+
+Originally, AudioCompress was only available as xmms-compress, a
+plugin for XMMS, because XMMS is the only audio player for Linux with
+existing plugin support.  But then I realized that no, it wasn't -
+UNIX pipes are a plugin architecture in its purest form!
+
+So, I prefer to run it as a commandline filter.
+
+Installing
+==========
+
+First, edit the Makefile to ensure that you have the compile-time options
+set appropriately for your system (including libraries and platform).  Or,
+write me an autoconf script. :)
+
+Next, simply run the following:
+
+	make    	# as any user
+	make install    # as root
+
+If you can't build the XMMS plugin for some reason (such as being on a
+non-ELF system, or not having the XMMS development headers installed),
+do:
+
+	make AudioCompress   # as any user
+	make install-cmdline # as root
+
+Additionally, if you want to run this on a system without X11 at all
+(for example, a headless audio server or similar), edit the Makefile
+and follow the directions for turning it X-less.
+
+Using AudioCompress
+===================
+
+As an XMMS plugin
+-----------------
+
+Restart XMMS (or otherwise cause it to rescan effect plugins) and
+configure it normally.
+
+As a commandline tool
+---------------------
+
+Currently, the commandline tool only accepts raw PCM data on standard
+input as 16-bit native-endian signed data.  Fortunately, this is how
+most audio players output data when you tell it to use stdout.
+
+So, just pipe the raw PCM out from your player into AudioCompress, and
+then into some mechanism of playing sound.  For example, if you're
+using mpg321 and esd, the commandline should be something like:
+
+	mpg321 --stereo -s -@ MyPlaylist.m3u | AudioCompress | esdcat
+
+Adjust accordingly for your OS and player and so on. :)
+
+Runtime configuration from the commandline can be seen by passing the
+-h option to AudioCompress.
+
+As an EsounD plugin
+-------------------
+
+Unless configured otherwise, the commandline tool can also be used as
+an EsounD (esd) filter, by adding the -e [esd host] option; for
+example:
+
+	esd -nobeeps &
+	AudioCompress -e localhost &
+
+It is highly recommended that you run AudioCompress from the same
+system as esd, due to the large amount of bandwidth which audio
+filters take up.
+
+Configuration Options
+=====================
+
+Show monitor window - When this is set, a window is displayed, showing
+what's going on.  The black peaks show the actual signal, the yellow
+peaks show the amplified signal, the horizontal blue line shows the
+current uncorrected peak level, and the red trace shows the corrected
+peak level.  Also, inside the black peaks small amounts of red will
+appear if any clipping happens, though in the display it is greatly
+exaggerated.
+
+Aggressive clipping protection - If this is set, then when the sound
+peaks, the volume will be cut instantly; otherwise, it will ramp down
+just in time for the peak.  This shouldn't have to be set, but some
+people with "golden ears" might claim they can tell the difference (in
+the same way that they can tell the difference between, say, S/PDIF
+and TOSLINK).
+
+Target audio level - Lowering this value gives a bit more dynamic
+range for peaks, but will make the overall sound quieter.  Must be at
+most 32768 (higher values make baby Jesus cry).
+
+Maximum gain - The maximum amount to amplify the audio by.  Just to
+keep it from amplifying the noise floor or making truly-quiet passages
+too loud.
+
+Gain smoothing - This defines how smoothly the volume will ramp.  A
+lower number is more aggressive but the effect will be more audible.
+The number affects the smoothness exponentially - increasing this by
+one will cause a volume ramp to take twice as long.
+
+Buckets - How long of a history to maintain.  A higher number will
+make the volume changes less responsive, and will also make the
+monitor window bigger.
+
+Potentially Asked Questions
+===========================
+
+Why does the audio playback lag from the monitor display?
+
+  The monitor display shows the bit which is being computed by the
+  audio plugin at this very instant; typically it buffers and queues
+  up a bunch of sound to remain responsive under a heavy system load
+  (for example, I have my mp3 plugin set to have a 128KB buffer, which
+  is about 3/4 of a second at 44Khz 16-bit stereo).
+
+Nothing seems to be happening!
+
+  If you mean you can't hear anything happening, that's kind of the
+  whole point - it's supposed to be subtle, and just prevent you from
+  needing to fiddle with your volume control all the time.
+
+  If you mean that nothing's being displayed in the monitor window or
+  anything, it could be that you have an odd configuration.  Right now
+  the plugin only does anything when it receives 16-bit audio in the
+  computer's native endianness, since I'm too lazy to deal with byte
+  swapping.  In *theory*, this should never be a problem, but in some
+  exotic configurations (on exotic sound hardware) with some odd
+  player plugins it might cause the plugin to do nothing.  Don't
+  worry, in that case the audio will just be unprocessed.
+
+Why do some songs still sound quieter than others?
+
+  This plugin only normalizes based on waveform peak, and not sound
+  power level.  Unfortunately, things which aren't properly equalized
+  will either sound quieter (if normalized based on voltage) or will
+  clip badly (if normalized based on power).  The only proper fix for
+  bad equalization is to fix the equalization.  Maybe someday someone
+  will make an automatic "maximum sound power level" equalizer, but
+  I'd much rather see audio engineers actually learn what they're
+  doing (rather than destroy actual quality audio work)... also, some
+  would (quite rightly) claim that automatically "fixing" the
+  equalization will totally change the character of the sound...
+  However, you can always just manually tweak song equalization and
+  then use the 'auto' feature to have it save the equalization on a
+  per-song basis.
+
+  Someday I may make a general-type plugin which will do things like
+  automatic equalization and silence skipping.  Unfortunately, effect
+  plugins don't have access to the things needed to do this properly.
+  And even more unfortunately, the XMMS plugin layer isn't documented
+  *at all* - there aren't even comments in the headers!  So the only
+  way to figure out the API is to parse through the headers and
+  experiment with random calls and return values and so on, and
+  referring to other plugins' sourcecode.  And most other plugins
+  aren't very well-coded, either.  (Not that a callback model really
+  makes for very clean code to begin with, but that's a whole other
+  rant...)
+
+Why does the sound "rattle" sometimes?  Can't this plugin help that?
+
+  The most common cause of rattling in the sound is clipping.  This
+  plugin does whatever it can to avoid clipping, and if you have it
+  configured with aggressive clipping avoidance, then it should never,
+  ever clip at all (and even without ANTICLIP, the only time that it
+  could clip is if the sound is nearly-silent and then suddenly
+  spikes, which is a situation where you're not likely to notice it
+  anyway).
+
+  However, a lot of sound files are pre-clipped.  If the sound rattles
+  without AudioCompress, then it will probably still rattle with it
+  too.  Sometime in the future I'm going to get around to implementing
+  an experimental "de-clipping" idea I have to try cleaning up clipped
+  audio, though.
+
+Why does it take a few seconds for a quiet song to get up to full
+volume?
+
+  This is because the normalization is based on the peak over the last
+  few seconds.  Unfortunately, there's no way to tell the difference
+  between a quiet song and a dramatic fadein.  Furthermore, if a song
+  is mastered quietly, it might be that the audio engineer wanted it
+  to actually be quiet compared to other songs, and so by having it
+  slowly fade in you'll still get this effect when coming from a loud
+  song.
+
+  Basically, there's no way for the effect plugin to deal with this in
+  a universally-reasonable way.  If it really bothers you, try
+  lowering your history length, but be warned that this will ruin
+  fades (it'll sound as though it fades in much more quickly, and
+  songs which fade out will tend to start to fade back in before they
+  finish fading out).
+
+Can I use another effect plugin at the same time as this one?
+
+  Unfortunately, XMMS doesn't directly support this, for reasons which
+  are likely a mystery to everyone but the XMMS developers.  However,
+  there are certain other plugins which allow you to have more than
+  one effect plugin; for example, xmms-crossfade lets you add in one
+  more to the chain.  If you're using xmms-crossfade (which is a
+  wonderful plugin that I highly recommend), you probably want to put
+  AudioCompress into XMMS' internal effect plugin slot and the other
+  effect into xmms-crossfade's.
+
+  There's probably "meta-plugins" which allow you to turn on multiple
+  effect plugins (preferrably to be applied in a certain order), but
+  at this time I don't know of any.
+
+When I try to close the monitor window, XMMS crashes!
+
+  This is due to a limitation in both Xlib and the way that effect
+  plugins are handled.  There's no really clean way for an effect
+  plugin to deal with its own window, as XMMS doesn't really expect
+  effect plugins to have a window.  As such, if you try to close the
+  window yourself, at best nothing will happen, and at worst some
+  window managers will go ahead and just kill the window itself,
+  leaving AudioCompress with no window to draw to, causing an
+  exception in Xlib which XMMS doesn't trap, causing Xlib to kill
+  XMMS.
+
+  Short answer: Only close the monitor window from the plugin
+  configuration.  Sorry.
+
+When using AudioCompress as an EsounD filter, it plays for about half
+a second before it freezes up!
+
+  Yeah, there's something wrong with esd in some configurations.  It's
+  being investigated (as of July 5, 2003).  The problem is in esd, not
+  AudioCompress.
+
+Acknowledgements
+================
+
+I have to thank Baruch Even for doing xmms-volnorm, since it was the
+inspiration for this.  Also, it made a fairly decent reference for a
+few of the silly minutiæ of writing XMMS plugins (since I didn't feel
+like spending several hours trying to find the XMMS plugin
+documentation, especially for something so trivial to program).
+
+Also, many many thanks to Javier Conde Rueda for writing the GUI code
+for the XMMS plugin, and Levi Ramsey for getting me to finally get
+around to writing a commandline configuration.
+
+Andrzej Szombierski implemented the EsounD plugin layer.
+
+Contact Information
+===================
+
+Bug reports, patch submission, etc.: fluffy at beesbuzz.biz
+Latest version: http://beesbuzz.biz/code/AudioCompress/
+XMMS homepage: http://www.xmms.org/

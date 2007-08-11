@@ -1,0 +1,20 @@
+Proper support for non-ELF/gcc systems (using libtool or autoconf)
+
+Rewrite the xmms preferences stuff (it's really nasty right now, being
+largely a bad Glade hack)
+
+Make it possible to close the monitor window from the WM
+
+Extend logic beyond 16-bit native-endian signed
+
+aRts plugin (should be easy)
+
+Better encapsulate the library in order to provide multiple compressor
+objects (e.g. CreateCompressor(), CompressorCfg(), etc), possibly
+making the preferences a public struct
+
+Possibly add band limiting?  This would introduce some other issues,
+though, like actually keeping track of how many channels there are...
+
+Figure out why on some sound hardware, ESD filters hang up (even
+though it's not technically a problem with AudioCompress)
