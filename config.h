@@ -2,25 +2,18 @@
 ** Default values for the configuration, and also a few random debug things
 */
 
-#ifndef CONFIG_H
-#define CONFIG_H
+#ifndef AC_CONFIG_H
+#define AC_CONFIG_H
 
 /*** Version information ***/
-#define ACVERSION "1.5.2"
-
-/*** Monitoring stuff ***/
-//#define DEBUG			/* Show debugging information */
-//#define STATS			/* Show statistics on stderr */
+#define ACVERSION "2.0"
 
 /*** Default configuration stuff ***/
-#define SHOWMON 1		/* Whether to show the monitor */
-#define ANTICLIP 0		/* Strict clipping protection */
-#define TARGET 25000		/* Target level */
+#define TARGET 16384		/*!< Target level (on a scale of 0-32767) */
 
-#define GAINMAX 32		/* The maximum amount to amplify by */
-#define GAINSHIFT 10		/* How fine-grained the gain is */
-#define GAINSMOOTH 8		/* How much inertia ramping has*/
-#define BUCKETS 400		/* How long of a history to store */
+#define GAINMAX 32		/*!< The maximum amount to amplify by */
+#define GAINSMOOTH 8		/*!< How much inertia ramping has*/
+#define BUCKETS 400		/*!< How long of a history to use by default */
 
 #endif
 

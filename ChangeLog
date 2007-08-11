@@ -1,3 +1,12 @@
+2007-08-11
+
+Release 2.0
+
+	Rewrote into a better-encapsulated library after not touching this
+	code for many years.  The monitor window is gone, as is the XMMS
+	plugin (seeing as how XMMS has completely changed since the last
+	time I did anything with this).
+	
 2004-10-19
 
 Release 1.5.2
