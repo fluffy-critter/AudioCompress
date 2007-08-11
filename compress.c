@@ -1,8 +1,8 @@
-/* compress.c
- * Compressor logic
+/*! compress.c
+ *  Compressor logic
  *
- * (c)2007 busybee (http://beesbuzz.biz/
- * Licensed under the terms of the LGPL. See the file COPYING for details.
+ *  (c)2002-2007 busybee (http://beesbuzz.biz/
+ *  Licensed under the terms of the LGPL. See the file COPYING for details.
  */
 
 #include <stdio.h>
@@ -12,6 +12,7 @@
 #include "config.h"
 #include "compress.h"
 
+//! Private state container struct
 struct Compressor {
         //! The compressor's preferences
         struct CompressorConfig prefs;

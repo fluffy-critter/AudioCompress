@@ -1,6 +1,9 @@
-/* AudioCompress.c
-** Simple commandline audio compressor
-*/
+/*! AudioCompress.c
+ *  Simple commandline audio compressor
+ *
+ *  (c)2002-2007 busybee (http://beesbuzz.biz/)
+ *  Licensed under the terms of the LGPL. See the file COPYING for details.
+ */
 
 #include <stdio.h>
 #include <sys/types.h>
